@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Axis Demo — AI Receptionist for Escape Rooms</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔐</text></svg>" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy: #0d1e35;
+      --navy-light: #122540;
+      --navy-card: #0f2238;
+      --gold: #b8965a;
+      --gold-light: #d4aa6e;
+      --text: #e8edf4;
+      --text-muted: #7a93b0;
+      --border: rgba(184, 150, 90, 0.15);
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--navy);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 900px;
+      width: 100%;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .logo-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--gold);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 22px;
+      color: var(--navy);
+    }
+    .logo-name {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .logo-name span { color: var(--gold); }
+    h1 {
+      font-size: clamp(28px, 5vw, 44px);
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 16px;
+    }
+    .subtitle {
+      font-size: 18px;
+      color: var(--text-muted);
+      max-width: 550px;
+      margin: 0 auto 32px;
+    }
+    .demo-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(184,150,90,0.12);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 8px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gold);
+      margin-bottom: 40px;
+    }
+    .demo-badge::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      background: #22c55e;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .demo-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+    @media (max-width: 700px) {
+      .demo-layout { grid-template-columns: 1fr; }
+    }
+    .demo-phone {
+      background: var(--navy-card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 20px;
+      position: relative;
+    }
+    .phone-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+    .phone-avatar {
+      width: 40px;
+      height: 40px;
+      background: var(--gold);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--navy);
+    }
+    .phone-info h3 { font-size: 15px; font-weight: 600; }
+    .phone-info p { font-size: 12px; color: #22c55e; }
+    .chat-messages {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 320px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .msg {
+      max-width: 85%;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .msg.bot {
+      background: var(--navy-light);
+      border: 1px solid var(--border);
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+    .msg.user {
+      background: var(--gold);
+      color: var(--navy);
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+      font-weight: 500;
+    }
+    .msg.typing {
+      background: var(--navy-light);
+      border: 1px solid var(--border);
+      align-self: flex-start;
+    }
+    .typing-dots {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+    .typing-dots span {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      animation: typingDot 0.8s infinite;
+    }
+    .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typingDot {
+      0%, 100% { opacity: 0.3; transform: translateY(0); }
+      50% { opacity: 1; transform: translateY(-4px); }
+    }
+    .chat-input-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+    .chat-input {
+      flex: 1;
+      background: var(--navy-light);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+    }
+    .chat-input:focus { border-color: var(--gold); }
+    .chat-input::placeholder { color: var(--text-muted); }
+    .chat-send {
+      background: var(--gold);
+      color: var(--navy);
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 14px;
+      transition: opacity 0.2s;
+    }
+    .chat-send:hover { opacity: 0.85; }
+    .demo-info {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .info-card {
+      background: var(--navy-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+    }
+    .info-card h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+    .suggestion-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .suggestion {
+      background: var(--navy-light);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .suggestion:hover {
+      border-color: var(--gold);
+      color: var(--text);
+      background: rgba(184,150,90,0.08);
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .stat {
+      background: var(--navy-light);
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+    }
+    .stat .num { font-size: 28px; font-weight: 800; color: var(--gold); }
+    .stat .label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+    .cta-card {
+      background: linear-gradient(135deg, rgba(184,150,90,0.12), rgba(184,150,90,0.05));
+      border: 1px solid var(--gold);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+    }
+    .cta-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .cta-card p { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; }
+    .cta-btn {
+      display: inline-block;
+      background: var(--gold);
+      color: var(--navy);
+      font-weight: 700;
+      padding: 12px 28px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 15px;
+      transition: opacity 0.2s;
+    }
+    .cta-btn:hover { opacity: 0.85; }
+    .powered {
+      text-align: center;
+      margin-top: 48px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .powered a { color: var(--gold); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">
+        <div class="logo-icon">A</div>
+        <div class="logo-name">Ax<span>is</span></div>
+      </div>
+      <h1>Try It Live</h1>
+      <p class="subtitle">This is Axis talking to a real escape room customer — exactly what your customers would see.</p>
+      <div class="demo-badge">Live Demo — Novus Escape Room (Middletown, DE)</div>
+    </div>
+
+    <div class="demo-layout">
+      <!-- Chat widget -->
+      <div class="demo-phone">
+        <div class="phone-header">
+          <div class="phone-avatar">A</div>
+          <div class="phone-info">
+            <h3>Axis AI Receptionist</h3>
+            <p>● Online — responds instantly</p>
+          </div>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+          <div class="msg bot">Hey! 👋 Welcome to Novus Escape Room. I'm Axis, your AI receptionist. I can check availability, tell you about our rooms, and help you book. What can I help you with?</div>
+        </div>
+        <div class="chat-input-row">
+          <input type="text" class="chat-input" id="chatInput" placeholder="Ask anything..." autocomplete="off" />
+          <button class="chat-send" id="chatSend">Send</button>
+        </div>
+      </div>
+
+      <!-- Right column -->
+      <div class="demo-info">
+        <!-- Suggestions -->
+        <div class="info-card">
+          <h3>Try asking Axis...</h3>
+          <div class="suggestion-list" id="suggestions">
+            <div class="suggestion" data-q="Do you have availability this Saturday evening for 6 people?">📅 "Do you have availability this Saturday evening for 6 people?"</div>
+            <div class="suggestion" data-q="Which room is the scariest?">👻 "Which room is the scariest?"</div>
+            <div class="suggestion" data-q="How much does it cost for a group of 10?">💰 "How much does it cost for a group of 10?"</div>
+            <div class="suggestion" data-q="Can I book for my company team building event?">🏢 "Can I book for my company team building event?"</div>
+            <div class="suggestion" data-q="Do you have anything available tonight?">⚡ "Do you have anything available tonight?"</div>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="info-card">
+          <h3>Why escape room owners use Axis</h3>
+          <div class="stat-grid">
+            <div class="stat">
+              <div class="num">3-5</div>
+              <div class="label">bookings missed weekly without it</div>
+            </div>
+            <div class="stat">
+              <div class="num">24/7</div>
+              <div class="label">responds instantly, even at 2am</div>
+            </div>
+            <div class="stat">
+              <div class="num">$99</div>
+              <div class="label">per month — pays for itself fast</div>
+            </div>
+            <div class="stat">
+              <div class="num">2min</div>
+              <div class="label">setup with your Bookeo account</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="cta-card">
+          <h3>Want this for your escape room?</h3>
+          <p>Free 30-day trial. No credit card. Works with Bookeo.</p>
+          <a href="https://rrp0620.github.io/axis-landing/#waitlist" class="cta-btn">Start Free Trial →</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="powered">
+      Axis is built for escape rooms. <a href="https://rrp0620.github.io/axis-landing/">Learn more →</a>
+    </div>
+  </div>
+
+  <script>
+    // Demo conversation script — simulates real AI responses
+    const DEMO_SCRIPT = {
+      "availability": {
+        triggers: ["available", "availability", "open", "saturday", "friday", "sunday", "tonight", "this week", "weekend", "slot", "book", "booking", "time", "7pm", "8pm", "6pm"],
+        response: "Let me check our live availability! 🔍\n\nFor this weekend:\n• **Saturday March 28:** 6pm ✅, 8pm ✅ (Chamber of Hocus)\n• **Saturday March 28:** 7pm ✅ (Doomsday Bunker)\n• **Sunday March 29:** 2pm ✅, 4pm ✅, 6pm ✅\n\nWe're wide open Thursday and Friday evenings too if weekdays work.\n\nHow many people are in your group, and which day looks good?"
+      },
+      "scary": {
+        triggers: ["scary", "scariest", "horror", "creepy", "jump scare", "afraid", "difficult", "hard", "challenge", "hardest"],
+        response: "Great question! We have 3 rooms:\n\n🔐 **Chamber of Hocus** — escape magic gone wrong. Atmospheric and tricky. Not jumpy, but genuinely tense. Most people say it's our hardest.\n\n💣 **Doomsday Bunker** — Cold War survival scenario. Race against the clock, lots of puzzles. High energy, less spooky.\n\n🕵️ **Conspiracy** — detective mystery. Moderate difficulty, great for first-timers or teams who like logic over atmosphere.\n\nFor maximum creep factor, Chamber of Hocus is the one. What kind of experience are you going for?"
+      },
+      "price": {
+        triggers: ["price", "cost", "much", "fee", "charge", "rate", "expensive", "cheap", "pay", "payment", "dollar"],
+        response: "Here's our pricing:\n\n**Standard booking:** $119 for a full group (up to 8 people)\nThat works out to about $15-20/person — really good value for a 60-minute experience.\n\n**Private booking (groups 8-20):** we price per head — usually around $22-25/person with a dedicated game master.\n\nFor corporate team building, we also put together custom packages with debrief time included.\n\nWhat size is your group? I can give you the exact number."
+      },
+      "corporate": {
+        triggers: ["corporate", "company", "team building", "work", "office", "coworkers", "colleagues", "business", "enterprise", "hr", "employee"],
+        response: "Yes! Corporate team building is actually one of our most popular bookings 🏢\n\nWhat we offer for corporate groups:\n• **Private buyout** — your team has the whole venue\n• **Multiple rooms running simultaneously** for large groups (up to 40 people)\n• **Debrief session** after — great for discussing teamwork dynamics\n• **Catering partnerships** for longer events\n\nOur most popular corporate package runs 2-3 hours and includes 2 room rotations + debrief.\n\nHow big is the team, and are you thinking daytime or evening?"
+      },
+      "default": "That's a great question! To give you the best answer, let me know:\n\n1. How many people will be in your group?\n2. Any date you have in mind?\n\nI can check live availability and tell you exactly what's open for you."
+    };
+
+    const chatMessages = document.getElementById('chatMessages');
+    const chatInput = document.getElementById('chatInput');
+    const chatSend = document.getElementById('chatSend');
+
+    function addMessage(role, text) {
+      const div = document.createElement('div');
+      div.className = 'msg ' + role;
+      // Handle basic markdown-style bold
+      div.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      return div;
+    }
+
+    function showTyping() {
+      const div = document.createElement('div');
+      div.className = 'msg typing';
+      div.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      return div;
+    }
+
+    function getResponse(message) {
+      const lower = message.toLowerCase();
+      for (const [key, entry] of Object.entries(DEMO_SCRIPT)) {
+        if (key === 'default') continue;
+        if (entry.triggers.some(t => lower.includes(t))) {
+          return entry.response;
+        }
+      }
+      return DEMO_SCRIPT.default;
+    }
+
+    function sendMessage(message) {
+      if (!message.trim()) return;
+      chatInput.value = '';
+      addMessage('user', message);
+
+      const typing = showTyping();
+      const delay = 800 + Math.random() * 800;
+      setTimeout(() => {
+        typing.remove();
+        const response = getResponse(message);
+        addMessage('bot', response);
+      }, delay);
+    }
+
+    chatSend.addEventListener('click', () => sendMessage(chatInput.value));
+    chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(chatInput.value); });
+
+    // Suggestion clicks
+    document.querySelectorAll('.suggestion').forEach(s => {
+      s.addEventListener('click', () => {
+        const q = s.getAttribute('data-q');
+        sendMessage(q);
+      });
+    });
+  </script>
+</body>
+</html>
