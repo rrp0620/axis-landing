@@ -1288,12 +1288,17 @@
       const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\nBusiness: ${business}\nPhone: ${phone}`);
       const mailtoFallback = `mailto:info.middletown@novusescaperoom.com?subject=${subject}&body=${body}`;
 
-      // Also push to a simple webhook/log if we set one up
+      // Push notification via ntfy.sh (free, no account needed)
       try {
-        await fetch('https://hooks.zapier.com/hooks/catch/placeholder/', {
+        await fetch('https://ntfy.sh/axis-trial-signups-novus2026', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, business, phone, source: 'axis-landing', timestamp: new Date().toISOString() })
+          headers: {
+            'Content-Type': 'text/plain',
+            'Title': `New Axis signup: ${business}`,
+            'Priority': 'urgent',
+            'Tags': 'key,tada'
+          },
+          body: `Name: ${name}\nEmail: ${email}\nBusiness: ${business}\nPhone: ${phone}`
         });
       } catch(err) {}
 
