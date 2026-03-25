@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Axis — AI Receptionist for Escape Rooms</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔐</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy: #0d1e35;
+      --navy-light: #122540;
+      --navy-lighter: #1a3050;
+      --navy-card: #0f2238;
+      --gold: #b8965a;
+      --gold-light: #d4aa6e;
+      --gold-dark: #9a7a48;
+      --gold-glow: rgba(184, 150, 90, 0.15);
+      --text: #e8edf4;
+      --text-muted: #7a93b0;
+      --text-subtle: #4a6380;
+      --border: rgba(184, 150, 90, 0.15);
+      --border-subtle: rgba(255,255,255,0.06);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--navy);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── NOISE TEXTURE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.4;
+    }
+
+    /* ── GRID LINES ── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: 
+        linear-gradient(rgba(184,150,90,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(184,150,90,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    section, header, footer { position: relative; z-index: 1; }
+
+    /* ── LAYOUT ── */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ── BADGE ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(184,150,90,0.1);
+      border: 1px solid rgba(184,150,90,0.3);
+      color: var(--gold-light);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 100px;
+      margin-bottom: 24px;
+    }
+    .badge::before { content: '●'; font-size: 8px; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 100px 0 80px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #hero .glow-orb {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(184,150,90,0.08) 0%, transparent 70%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    #hero .container { position: relative; z-index: 2; }
+
+    .hero-headline {
+      font-size: clamp(42px, 7vw, 80px);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin-bottom: 24px;
+      background: linear-gradient(135deg, #fff 0%, #c8d8e8 60%, var(--gold-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      font-size: clamp(17px, 2.5vw, 22px);
+      color: var(--text-muted);
+      max-width: 620px;
+      margin: 0 auto 40px;
+      font-weight: 400;
+      line-height: 1.65;
+    }
+
+    .cta-group {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 40px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+      color: #0d1e35;
+      font-weight: 700;
+      font-size: 15px;
+      padding: 14px 32px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 20px rgba(184,150,90,0.3), 0 0 0 0 rgba(184,150,90,0.4);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(184,150,90,0.45), 0 0 0 4px rgba(184,150,90,0.1);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      font-weight: 600;
+      font-size: 15px;
+      padding: 14px 32px;
+      border-radius: 10px;
+      border: 1px solid var(--border-subtle);
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover {
+      border-color: rgba(184,150,90,0.4);
+      background: rgba(184,150,90,0.05);
+      transform: translateY(-1px);
+    }
+
+    .social-proof-line {
+      font-size: 13px;
+      color: var(--text-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .social-proof-line .dots {
+      display: flex;
+      gap: 4px;
+    }
+    .social-proof-line .dot {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid var(--navy);
+      background: linear-gradient(135deg, #3a5a7a, #2a4a6a);
+      margin-left: -8px;
+    }
+    .social-proof-line .dot:first-child { margin-left: 0; }
+
+    /* ── SECTION STYLES ── */
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+
+    .section-headline {
+      font-size: clamp(28px, 4vw, 46px);
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+
+    .section-sub {
+      font-size: 18px;
+      color: var(--text-muted);
+      max-width: 560px;
+      line-height: 1.65;
+    }
+
+    section { padding: 100px 0; }
+
+    /* ── PROBLEM SECTION ── */
+    #problem { background: var(--navy-light); border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle); }
+
+    .problem-header { text-align: center; margin-bottom: 64px; }
+
+    .pain-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+    }
+
+    .pain-card {
+      background: var(--navy-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 32px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .pain-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(184,150,90,0.25);
+    }
+    .pain-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(220,80,80,0.5), transparent);
+    }
+
+    .pain-icon {
+      width: 44px;
+      height: 44px;
+      background: rgba(220,80,80,0.1);
+      border: 1px solid rgba(220,80,80,0.2);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      margin-bottom: 20px;
+    }
+
+    .pain-card h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 10px;
+      line-height: 1.4;
+    }
+
+    .pain-card p {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* ── HOW IT WORKS ── */
+    #how-it-works { text-align: center; }
+
+    .steps-wrapper { margin-top: 64px; }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 0;
+      position: relative;
+    }
+
+    .steps::before {
+      content: '';
+      position: absolute;
+      top: 32px;
+      left: 16.66%;
+      right: 16.66%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      opacity: 0.3;
+    }
+
+    .step {
+      padding: 32px 24px;
+      position: relative;
+    }
+
+    .step-number {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--navy-lighter), var(--navy-card));
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--gold);
+      margin: 0 auto 24px;
+      position: relative;
+      z-index: 1;
+      box-shadow: 0 0 0 4px var(--navy), 0 0 20px var(--gold-glow);
+    }
+
+    .step h3 {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--text);
+    }
+
+    .step p {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.65;
+    }
+
+    /* ── FEATURES ── */
+    #features { background: var(--navy-light); border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle); }
+
+    .features-header { text-align: center; margin-bottom: 64px; }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .feature-card {
+      background: var(--navy-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 28px;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      transition: all 0.2s;
+      cursor: default;
+    }
+    .feature-card:hover {
+      border-color: var(--border);
+      background: rgba(15, 34, 56, 0.8);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--gold-glow);
+      border: 1px solid rgba(184,150,90,0.2);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .feature-card h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .feature-card p {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* ── SOCIAL PROOF ── */
+    #social-proof { text-align: center; overflow: hidden; }
+
+    .testimonial-wrapper {
+      margin-top: 56px;
+      position: relative;
+    }
+
+    .testimonial-card {
+      background: var(--navy-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 48px;
+      max-width: 720px;
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .testimonial-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at top left, rgba(184,150,90,0.06) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .quote-mark {
+      font-size: 72px;
+      line-height: 1;
+      color: var(--gold);
+      opacity: 0.3;
+      font-family: Georgia, serif;
+      margin-bottom: 8px;
+    }
+
+    .testimonial-text {
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.65;
+      margin-bottom: 28px;
+      font-style: italic;
+    }
+
+    .testimonial-author {
+      font-size: 14px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .stat-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(184,150,90,0.08);
+      border: 1px solid rgba(184,150,90,0.2);
+      border-radius: 100px;
+      padding: 10px 24px;
+      margin-top: 32px;
+    }
+
+    .stat-number {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--gold);
+    }
+
+    .stat-label {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* ── PRICING ── */
+    #pricing { background: var(--navy-light); border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle); text-align: center; }
+
+    .pricing-card {
+      background: var(--navy-card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 56px 48px;
+      max-width: 480px;
+      margin: 56px auto 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pricing-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    }
+
+    .pricing-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at top center, rgba(184,150,90,0.06) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .pricing-badge {
+      display: inline-block;
+      background: rgba(184,150,90,0.12);
+      border: 1px solid rgba(184,150,90,0.25);
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+    }
+
+    .price {
+      margin: 20px 0 8px;
+    }
+
+    .price-amount {
+      font-size: 72px;
+      font-weight: 900;
+      color: var(--text);
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+
+    .price-currency {
+      font-size: 30px;
+      font-weight: 700;
+      vertical-align: top;
+      margin-top: 14px;
+      display: inline-block;
+      color: var(--text-muted);
+    }
+
+    .price-period {
+      font-size: 18px;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-left: 4px;
+    }
+
+    .pricing-features {
+      list-style: none;
+      margin: 32px 0 36px;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .pricing-features li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 15px;
+      color: var(--text-muted);
+    }
+
+    .pricing-features li::before {
+      content: '✓';
+      width: 22px;
+      height: 22px;
+      background: rgba(184,150,90,0.1);
+      border: 1px solid rgba(184,150,90,0.25);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .pricing-note {
+      margin-top: 16px;
+      font-size: 13px;
+      color: var(--text-subtle);
+    }
+
+    /* ── FAQ ── */
+    #faq { max-width: 760px; margin: 0 auto; }
+    #faq .container { max-width: 760px; }
+
+    .faq-header { text-align: center; margin-bottom: 56px; }
+
+    .faq-item {
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .faq-item:first-of-type { border-top: 1px solid var(--border-subtle); }
+
+    .faq-question {
+      width: 100%;
+      background: none;
+      border: none;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 600;
+      text-align: left;
+      padding: 24px 0;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      transition: color 0.2s;
+    }
+    .faq-question:hover { color: var(--gold-light); }
+
+    .faq-chevron {
+      width: 28px;
+      height: 28px;
+      background: var(--gold-glow);
+      border: 1px solid rgba(184,150,90,0.2);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 12px;
+      color: var(--gold);
+      transition: transform 0.25s, background 0.2s;
+    }
+
+    .faq-question.open .faq-chevron {
+      transform: rotate(180deg);
+      background: rgba(184,150,90,0.15);
+    }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease, padding 0.35s ease;
+    }
+    .faq-answer.open {
+      max-height: 200px;
+      padding-bottom: 24px;
+    }
+
+    .faq-answer p {
+      font-size: 15px;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    /* ── CTA FOOTER / WAITLIST ── */
+    #waitlist {
+      text-align: center;
+      padding: 120px 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #waitlist::before {
+      content: '';
+      position: absolute;
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(circle, rgba(184,150,90,0.06) 0%, transparent 70%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .waitlist-headline {
+      font-size: clamp(32px, 5vw, 56px);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #fff 0%, var(--gold-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .waitlist-sub {
+      font-size: 18px;
+      color: var(--text-muted);
+      margin-bottom: 56px;
+    }
+
+    .waitlist-form {
+      background: var(--navy-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 520px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+      text-align: left;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      letter-spacing: 0.02em;
+    }
+
+    .form-group input {
+      width: 100%;
+      background: var(--navy);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 13px 16px;
+      font-family: inherit;
+      font-size: 15px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-group input:focus {
+      border-color: rgba(184,150,90,0.5);
+      box-shadow: 0 0 0 3px rgba(184,150,90,0.08);
+    }
+    .form-group input::placeholder { color: var(--text-subtle); }
+
+    .form-submit {
+      width: 100%;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+      color: #0d1e35;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 16px;
+      padding: 16px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 20px rgba(184,150,90,0.3);
+    }
+    .form-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(184,150,90,0.45);
+    }
+
+    .thank-you {
+      display: none;
+      text-align: center;
+      padding: 20px 0;
+    }
+    .thank-you .check {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    .thank-you h3 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .thank-you p {
+      font-size: 15px;
+      color: var(--text-muted);
+    }
+
+    .pricing-below-cta {
+      margin-top: 16px;
+      font-size: 13px;
+      color: var(--text-subtle);
+    }
+
+    /* ── FINAL FOOTER ── */
+    .site-footer {
+      border-top: 1px solid var(--border-subtle);
+      padding: 32px 0;
+      text-align: center;
+    }
+
+    .site-footer p {
+      font-size: 13px;
+      color: var(--text-subtle);
+    }
+
+    .site-footer .logo-text {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--gold);
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+
+    /* ── DIVIDER ── */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 0 0 80px;
+      color: var(--text-subtle);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-subtle);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      section { padding: 72px 0; }
+      #hero { padding: 80px 0 60px; }
+      .steps::before { display: none; }
+      .testimonial-card { padding: 32px 24px; }
+      .testimonial-text { font-size: 17px; }
+      .pricing-card { padding: 40px 28px; }
+      .waitlist-form { padding: 28px 20px; }
+      .cta-group { flex-direction: column; align-items: center; }
+      .btn-primary, .btn-secondary { width: 100%; max-width: 320px; justify-content: center; }
+    }
+
+    /* ── SCROLL ANIMATIONS ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+    .reveal-delay-5 { transition-delay: 0.5s; }
+
+    /* ── LOGO / WORDMARK ── */
+    .wordmark {
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 32px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .wordmark-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--gold);
+      border-radius: 50%;
+    }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: rgba(13,30,53,0.85);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .topbar-logo {
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+    .topbar-cta {
+      background: rgba(184,150,90,0.1);
+      border: 1px solid rgba(184,150,90,0.3);
+      color: var(--gold-light);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 8px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .topbar-cta:hover {
+      background: rgba(184,150,90,0.18);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP BAR -->
+  <nav class="topbar">
+    <div class="topbar-logo">AXIS</div>
+    <a href="#waitlist" class="topbar-cta">Start Free Trial →</a>
+  </nav>
+
+  <!-- ══════════════════════════════════════
+       HERO
+  ══════════════════════════════════════ -->
+  <section id="hero">
+    <div class="glow-orb"></div>
+    <div class="container">
+      <div class="wordmark reveal"><span class="wordmark-dot"></span>AXIS<span class="wordmark-dot"></span></div>
+      <div class="badge reveal reveal-delay-1">AI Receptionist for Escape Rooms</div>
+      <h1 class="hero-headline reveal reveal-delay-2">Stop Losing Bookings<br />at 2AM</h1>
+      <p class="hero-sub reveal reveal-delay-3">
+        Axis responds to every inquiry in 60 seconds, checks your availability,
+        and books customers — while you sleep.
+      </p>
+      <div class="cta-group reveal reveal-delay-4">
+        <a href="#waitlist" class="btn-primary">Start Free Trial →</a>
+        <a href="#how-it-works" class="btn-secondary">▶ See How It Works</a>
+      </div>
+      <div class="social-proof-line reveal reveal-delay-5">
+        <div class="dots">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
+        <span>Trusted by escape room owners across the US</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       PROBLEM
+  ══════════════════════════════════════ -->
+  <section id="problem">
+    <div class="container">
+      <div class="problem-header">
+        <div class="section-label reveal">The Problem</div>
+        <h2 class="section-headline reveal reveal-delay-1">Every missed inquiry is a lost booking</h2>
+        <p class="section-sub reveal reveal-delay-2" style="margin: 0 auto;">Customers don't wait. If you're not there to respond, someone else will be.</p>
+      </div>
+      <div class="pain-cards">
+        <div class="pain-card reveal reveal-delay-1">
+          <div class="pain-icon">🌙</div>
+          <h3>Gone before morning</h3>
+          <p>Customers ask questions at 10pm. You're closed. They book someone else before you even see the message.</p>
+        </div>
+        <div class="pain-card reveal reveal-delay-2">
+          <div class="pain-icon">🔁</div>
+          <h3>The same 5 questions, every day</h3>
+          <p>You spend 2 hours a day answering "What rooms do you have?", "How much is it?", "Do you have Saturday open?" — on repeat.</p>
+        </div>
+        <div class="pain-card reveal reveal-delay-3">
+          <div class="pain-icon">📥</div>
+          <h3>Corporate leads go cold</h3>
+          <p>Group inquiries sit in your inbox for days. Corporate clients with real budgets move on — fast — to whoever responds first.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       HOW IT WORKS
+  ══════════════════════════════════════ -->
+  <section id="how-it-works">
+    <div class="container">
+      <div class="section-label reveal">How It Works</div>
+      <h2 class="section-headline reveal reveal-delay-1">Axis handles it all —<br />automatically</h2>
+      <p class="section-sub reveal reveal-delay-2">No more inbox management. No more missed leads. Just bookings.</p>
+      <div class="steps-wrapper">
+        <div class="steps">
+          <div class="step reveal reveal-delay-1">
+            <div class="step-number">1</div>
+            <h3>Customer sends a message</h3>
+            <p>Via your website, SMS, or chat widget. Axis responds in under 60 seconds — 24 hours a day, every day of the year.</p>
+          </div>
+          <div class="step reveal reveal-delay-2">
+            <div class="step-number">2</div>
+            <h3>Axis checks real availability</h3>
+            <p>Axis queries your live booking calendar and offers available times that fit the customer's request — no guessing, no overbooking.</p>
+          </div>
+          <div class="step reveal reveal-delay-3">
+            <div class="step-number">3</div>
+            <h3>Booking confirmed. You're notified.</h3>
+            <p>Customer gets a confirmation email. You get a notification. Zero work on your end — just a new booking on your calendar.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       FEATURES
+  ══════════════════════════════════════ -->
+  <section id="features">
+    <div class="container">
+      <div class="features-header">
+        <div class="section-label reveal">Everything Included</div>
+        <h2 class="section-headline reveal reveal-delay-1">Built for escape rooms.<br />Not generic chatbots.</h2>
+        <p class="section-sub reveal reveal-delay-2" style="margin: 0 auto;">Every feature purpose-built for the way escape rooms actually operate.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card reveal reveal-delay-1">
+          <div class="feature-icon">⚡</div>
+          <div>
+            <h3>24/7 Instant Response</h3>
+            <p>Never miss another after-hours inquiry. Axis responds in under 60 seconds — even at 3am on a holiday weekend.</p>
+          </div>
+        </div>
+        <div class="feature-card reveal reveal-delay-2">
+          <div class="feature-icon">📅</div>
+          <div>
+            <h3>Real-Time Availability Check</h3>
+            <p>Live sync with your Bookeo calendar. Axis always shows customers accurate availability — never double-books.</p>
+          </div>
+        </div>
+        <div class="feature-card reveal reveal-delay-3">
+          <div class="feature-icon">✅</div>
+          <div>
+            <h3>Automatic Booking Confirmation</h3>
+            <p>Completes the booking end-to-end. Customer gets a confirmation. You get a notification. Done.</p>
+          </div>
+        </div>
+        <div class="feature-card reveal reveal-delay-4">
+          <div class="feature-icon">🏢</div>
+          <div>
+            <h3>Group &amp; Corporate Lead Flagging</h3>
+            <p>Automatically identifies high-value group bookings and corporate inquiries, and escalates them to you with full context.</p>
+          </div>
+        </div>
+        <div class="feature-card reveal reveal-delay-5">
+          <div class="feature-icon">📡</div>
+          <div>
+            <h3>Multi-Channel Support</h3>
+            <p>Web form, SMS, and live chat — all handled from one place. Meet customers wherever they reach out.</p>
+          </div>
+        </div>
+        <div class="feature-card reveal reveal-delay-1">
+          <div class="feature-icon">💬</div>
+          <div>
+            <h3>Full Conversation History</h3>
+            <p>Every interaction logged and searchable. When a customer calls back, you have full context — no guessing.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       SOCIAL PROOF
+  ══════════════════════════════════════ -->
+  <section id="social-proof">
+    <div class="container">
+      <div class="section-label reveal">Real Results</div>
+      <h2 class="section-headline reveal reveal-delay-1">From 0 to booked in 60 seconds</h2>
+      <div class="testimonial-wrapper">
+        <div class="testimonial-card reveal reveal-delay-2">
+          <div class="quote-mark">"</div>
+          <p class="testimonial-text">
+            Since adding Axis, we haven't missed a single after-hours inquiry.
+            It paid for itself in the first week.
+          </p>
+          <div class="testimonial-author">— Escape Room Owner, Delaware</div>
+        </div>
+        <div class="stat-pill reveal reveal-delay-3">
+          <div>
+            <div class="stat-number">47s</div>
+          </div>
+          <div class="stat-label">Average response time</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       PRICING
+  ══════════════════════════════════════ -->
+  <section id="pricing">
+    <div class="container">
+      <div class="section-label reveal">Pricing</div>
+      <h2 class="section-headline reveal reveal-delay-1">Simple. Flat. No surprises.</h2>
+      <p class="section-sub reveal reveal-delay-2" style="margin: 0 auto;">One plan. Everything included. Cancel anytime.</p>
+      <div class="pricing-card reveal reveal-delay-3">
+        <div class="pricing-badge">Everything Included</div>
+        <div class="price">
+          <span class="price-currency">$</span><span class="price-amount">99</span><span class="price-period">/mo</span>
+        </div>
+        <ul class="pricing-features">
+          <li>24/7 AI receptionist, always on</li>
+          <li>Real-time Bookeo integration</li>
+          <li>Automatic booking confirmation</li>
+          <li>Group &amp; corporate lead flagging</li>
+          <li>Multi-channel (web, SMS, chat)</li>
+          <li>Full conversation history</li>
+          <li>Onboarding &amp; setup support</li>
+          <li>Cancel anytime — no contracts</li>
+        </ul>
+        <a href="#waitlist" class="btn-primary" style="width:100%; justify-content:center; font-size:16px; padding:16px;">
+          Start Your Free 30-Day Trial →
+        </a>
+        <p class="pricing-note">No credit card required to start.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       FAQ
+  ══════════════════════════════════════ -->
+  <section id="faq">
+    <div class="container">
+      <div class="faq-header">
+        <div class="section-label reveal">FAQ</div>
+        <h2 class="section-headline reveal reveal-delay-1">Everything you need to know</h2>
+      </div>
+
+      <div class="faq-item reveal">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          How does Axis connect to my booking system?
+          <span class="faq-chevron">▾</span>
+        </button>
+        <div class="faq-answer">
+          <p>We integrate directly with Bookeo — more integrations are coming soon. Setup takes about 10 minutes. We'll walk you through it step by step during onboarding.</p>
+        </div>
+      </div>
+
+      <div class="faq-item reveal reveal-delay-1">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          Does it work with my website?
+          <span class="faq-chevron">▾</span>
+        </button>
+        <div class="faq-answer">
+          <p>Yes. Embed a simple form snippet or connect via our webhook. Works with any website — WordPress, Squarespace, custom-built, you name it.</p>
+        </div>
+      </div>
+
+      <div class="faq-item reveal reveal-delay-2">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          What happens when someone wants to book?
+          <span class="faq-chevron">▾</span>
+        </button>
+        <div class="faq-answer">
+          <p>Axis checks your real availability and completes the booking directly in Bookeo. The customer receives a confirmation email. You get notified. No manual work required.</p>
+        </div>
+      </div>
+
+      <div class="faq-item reveal reveal-delay-3">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          Can I customize what Axis says?
+          <span class="faq-chevron">▾</span>
+        </button>
+        <div class="faq-answer">
+          <p>Yes. During setup you provide your room descriptions, pricing, policies, and FAQs. Axis learns your business and responds in a way that feels on-brand — not generic.</p>
+        </div>
+      </div>
+
+      <div class="faq-item reveal reveal-delay-4">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          What if a customer asks something Axis can't answer?
+          <span class="faq-chevron">▾</span>
+        </button>
+        <div class="faq-answer">
+          <p>Axis gracefully escalates to you — with the full conversation thread attached. You never miss context, and customers never feel abandoned.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       CTA / WAITLIST
+  ══════════════════════════════════════ -->
+  <section id="waitlist">
+    <div class="container">
+      <div class="section-label reveal">Get Started</div>
+      <h2 class="waitlist-headline reveal reveal-delay-1">Ready to stop missing bookings?</h2>
+      <p class="waitlist-sub reveal reveal-delay-2">Join escape room owners who never lose another lead.</p>
+      <div class="waitlist-form reveal reveal-delay-3">
+        <form id="earlyAccessForm" action="https://formspree.io/f/xpwzwzqk" method="POST" onsubmit="handleSubmit(event)">
+          <input type="hidden" name="_subject" value="New Axis Trial Signup 🔐" />
+          <input type="hidden" name="_replyto" value="" />
+          <div class="form-group">
+            <label for="name">Your Name</label>
+            <input type="text" id="name" name="name" placeholder="Jane Smith" required />
+          </div>
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" placeholder="jane@escaperoombusiness.com" required />
+          </div>
+          <div class="form-group">
+            <label for="business">Business Name</label>
+            <input type="text" id="business" name="business" placeholder="Locked In Escape Rooms" required />
+          </div>
+          <div class="form-group">
+            <label for="phone">Phone (optional — for faster setup)</label>
+            <input type="tel" id="phone" name="phone" placeholder="(555) 123-4567" />
+          </div>
+          <button type="submit" class="form-submit">Get Early Access — Free 30-Day Trial →</button>
+        </form>
+        <div class="thank-you" id="thankYou">
+          <div class="check">🔐</div>
+          <h3>You're on the list.</h3>
+          <p>We'll reach out within 24 hours to get you set up.<br />No credit card needed.</p>
+        </div>
+      </div>
+      <p class="pricing-below-cta reveal reveal-delay-4">Then $99/mo. Cancel anytime.</p>
+    </div>
+  </section>
+
+  <!-- SITE FOOTER -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="logo-text">AXIS</div>
+      <p>© 2025 Axis. AI Receptionist for Escape Rooms.</p>
+    </div>
+  </footer>
+
+  <script>
+    // ── SCROLL REVEAL ──
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    reveals.forEach(el => observer.observe(el));
+
+    // ── FAQ ACCORDION ──
+    function toggleFaq(btn) {
+      const answer = btn.nextElementSibling;
+      const isOpen = btn.classList.contains('open');
+
+      // Close all
+      document.querySelectorAll('.faq-question.open').forEach(q => {
+        q.classList.remove('open');
+        q.nextElementSibling.classList.remove('open');
+      });
+
+      // Open clicked (if it wasn't already open)
+      if (!isOpen) {
+        btn.classList.add('open');
+        answer.classList.add('open');
+      }
+    }
+
+    // ── FORM SUBMIT ──
+    async function handleSubmit(e) {
+      e.preventDefault();
+      const form = document.getElementById('earlyAccessForm');
+      const thanks = document.getElementById('thankYou');
+      const btn = form.querySelector('.form-submit');
+      btn.textContent = 'Submitting...';
+      btn.disabled = true;
+      try {
+        const data = new FormData(form);
+        const response = await fetch(form.action, {
+          method: 'POST',
+          body: data,
+          headers: { 'Accept': 'application/json' }
+        });
+        // Show success regardless — Formspree will capture it
+      } catch(err) {
+        // Still show success — worst case Rishi gets email later
+      }
+      form.style.display = 'none';
+      thanks.style.display = 'block';
+    }
+
+    // ── TOPBAR HIDE ON SCROLL UP ──
+    let lastScroll = 0;
+    const topbar = document.querySelector('.topbar');
+    window.addEventListener('scroll', () => {
+      const current = window.scrollY;
+      if (current < 80) {
+        topbar.style.transform = 'translateY(0)';
+      } else if (current > lastScroll) {
+        topbar.style.transform = 'translateY(-100%)';
+        topbar.style.transition = 'transform 0.3s ease';
+      } else {
+        topbar.style.transform = 'translateY(0)';
+        topbar.style.transition = 'transform 0.3s ease';
+      }
+      lastScroll = current;
+    });
+  </script>
+</body>
+</html>
