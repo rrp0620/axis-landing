@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Axis — AI Receptionist for Escape Rooms</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0d1e35;
+      color: #e8edf4;
+      min-height: 100vh;
+      padding: 48px 24px;
+    }
+    .page {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    /* HEADER */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 32px;
+      border-bottom: 1px solid rgba(184,150,90,0.2);
+      margin-bottom: 40px;
+    }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-box {
+      width: 44px; height: 44px;
+      background: #b8965a;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 22px; color: #0d1e35;
+    }
+    .logo-text { font-size: 24px; font-weight: 800; }
+    .logo-text span { color: #b8965a; }
+    .tagline-pill {
+      background: rgba(184,150,90,0.12);
+      border: 1px solid rgba(184,150,90,0.3);
+      border-radius: 100px;
+      padding: 6px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #b8965a;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    /* HERO */
+    .hero { margin-bottom: 40px; }
+    .hero h1 {
+      font-size: 42px;
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+    .hero h1 span { color: #b8965a; }
+    .hero p {
+      font-size: 17px;
+      color: #7a93b0;
+      line-height: 1.6;
+      max-width: 540px;
+    }
+
+    /* PROBLEM */
+    .problem-box {
+      background: rgba(239,68,68,0.08);
+      border: 1px solid rgba(239,68,68,0.2);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+    .problem-box .label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #ef4444;
+      margin-bottom: 12px;
+    }
+    .problem-box h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .problem-box p { font-size: 15px; color: #7a93b0; line-height: 1.6; }
+
+    /* FEATURES */
+    .features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .feature {
+      background: #0f2238;
+      border: 1px solid rgba(184,150,90,0.12);
+      border-radius: 14px;
+      padding: 20px;
+    }
+    .feature .icon { font-size: 24px; margin-bottom: 10px; }
+    .feature h3 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .feature p { font-size: 13px; color: #7a93b0; line-height: 1.5; }
+
+    /* STATS */
+    .stats {
+      display: flex;
+      gap: 20px;
+      background: #0f2238;
+      border: 1px solid rgba(184,150,90,0.15);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 32px;
+      justify-content: space-around;
+    }
+    .stat { text-align: center; }
+    .stat .num { font-size: 36px; font-weight: 900; color: #b8965a; line-height: 1; }
+    .stat .label { font-size: 12px; color: #7a93b0; margin-top: 6px; line-height: 1.3; }
+
+    /* HOW IT WORKS */
+    .steps { margin-bottom: 32px; }
+    .steps h2 { font-size: 20px; font-weight: 700; margin-bottom: 20px; color: #b8965a; }
+    .step {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+    .step-num {
+      width: 32px; height: 32px;
+      background: #b8965a;
+      color: #0d1e35;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .step-text h3 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+    .step-text p { font-size: 13px; color: #7a93b0; line-height: 1.5; }
+
+    /* PRICE */
+    .price-box {
+      background: linear-gradient(135deg, rgba(184,150,90,0.15), rgba(184,150,90,0.05));
+      border: 1px solid rgba(184,150,90,0.4);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 32px;
+      text-align: center;
+    }
+    .price-box h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+    .price-amount {
+      font-size: 56px;
+      font-weight: 900;
+      color: #b8965a;
+      line-height: 1;
+      margin: 12px 0 4px;
+    }
+    .price-period { font-size: 16px; color: #7a93b0; margin-bottom: 16px; }
+    .price-bullets {
+      list-style: none;
+      font-size: 14px;
+      color: #e8edf4;
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: center;
+    }
+    .price-bullets li::before { content: "✓ "; color: #22c55e; font-weight: 700; }
+
+    /* CTA */
+    .cta-row {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn-primary {
+      display: inline-block;
+      background: #b8965a;
+      color: #0d1e35;
+      font-weight: 700;
+      font-size: 15px;
+      padding: 14px 32px;
+      border-radius: 10px;
+      text-decoration: none;
+    }
+    .btn-secondary {
+      display: inline-block;
+      background: transparent;
+      color: #b8965a;
+      border: 1px solid #b8965a;
+      font-weight: 700;
+      font-size: 15px;
+      padding: 14px 32px;
+      border-radius: 10px;
+      text-decoration: none;
+    }
+
+    /* FOOTER */
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(184,150,90,0.1);
+      font-size: 13px;
+      color: #4a6380;
+    }
+
+    @media print {
+      body { background: white; color: #111; }
+      .hero h1 { color: #111; }
+      .hero h1 span { color: #b8965a; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="logo">
+        <div class="logo-box">A</div>
+        <div class="logo-text">Ax<span>is</span></div>
+      </div>
+      <div class="tagline-pill">AI Receptionist · Escape Rooms</div>
+    </div>
+
+    <!-- Hero -->
+    <div class="hero">
+      <h1>Your escape room<br />is losing <span>bookings right now</span></h1>
+      <p>Every inquiry that goes unanswered after hours is a booking your competitor gets. Axis responds in 60 seconds — 24/7 — even while you sleep.</p>
+    </div>
+
+    <!-- Problem -->
+    <div class="problem-box">
+      <div class="label">The Problem</div>
+      <h2>3-5 bookings leak every week from after-hours silence</h2>
+      <p>Customers text at 10pm, midnight, Saturday morning. When nobody answers, they don't wait — they find someone who does. At $119/booking, that's $1,500-2,500/month walking out the door.</p>
+    </div>
+
+    <!-- Features -->
+    <div class="features">
+      <div class="feature">
+        <div class="icon">⚡</div>
+        <h3>60-Second Response</h3>
+        <p>Every inquiry gets a real, helpful reply in under a minute. No "we'll get back to you."</p>
+      </div>
+      <div class="feature">
+        <div class="icon">📅</div>
+        <h3>Live Bookeo Integration</h3>
+        <p>Checks your actual availability in real time and books customers directly into your calendar.</p>
+      </div>
+      <div class="feature">
+        <div class="icon">🧠</div>
+        <h3>Knows Your Rooms</h3>
+        <p>Answers questions about difficulty, themes, group size, pricing — naturally, not like a bot.</p>
+      </div>
+      <div class="feature">
+        <div class="icon">🏢</div>
+        <h3>Corporate Escalation</h3>
+        <p>Groups of 8+ automatically flagged for personal owner follow-up. Never miss a big booking.</p>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat">
+        <div class="num">60s</div>
+        <div class="label">Average response time</div>
+      </div>
+      <div class="stat">
+        <div class="num">24/7</div>
+        <div class="label">Always on</div>
+      </div>
+      <div class="stat">
+        <div class="num">2min</div>
+        <div class="label">Setup with Bookeo</div>
+      </div>
+      <div class="stat">
+        <div class="num">$119</div>
+        <div class="label">Avg booking recovered</div>
+      </div>
+    </div>
+
+    <!-- How it works -->
+    <div class="steps">
+      <h2>How It Works</h2>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">
+          <h3>Customer reaches out</h3>
+          <p>Via your website chat widget — any time, day or night.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">
+          <h3>Axis responds instantly</h3>
+          <p>Checks your Bookeo availability in real time, answers questions naturally, pushes toward booking.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">
+          <h3>Booking completed automatically</h3>
+          <p>Customer booked directly into your calendar. You get notified. Done.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Price -->
+    <div class="price-box">
+      <h2>Simple, transparent pricing</h2>
+      <div class="price-amount">$99</div>
+      <div class="price-period">per month</div>
+      <ul class="price-bullets">
+        <li>30-day free trial — no credit card needed</li>
+        <li>Unlimited conversations</li>
+        <li>Full Bookeo integration</li>
+        <li>Website chat widget included</li>
+        <li>Cancel anytime</li>
+      </ul>
+      <div class="cta-row">
+        <a href="https://rrp0620.github.io/axis-landing/#waitlist" class="btn-primary">Start Free Trial →</a>
+        <a href="https://rrp0620.github.io/axis-landing/demo.html" class="btn-secondary">▶ Try Live Demo</a>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>Built by Rishi Patel, owner of Novus Escape Room — Middletown, DE</p>
+      <p style="margin-top:8px;">Questions? Email info.middletown@novusescaperoom.com</p>
+    </div>
+
+  </div>
+</body>
+</html>
