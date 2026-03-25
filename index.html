@@ -1267,19 +1267,48 @@
       const btn = form.querySelector('.form-submit');
       btn.textContent = 'Submitting...';
       btn.disabled = true;
+
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const business = document.getElementById('business').value;
+      const phone = document.getElementById('phone').value || 'not provided';
+
+      // Primary: Formspree
       try {
         const data = new FormData(form);
-        const response = await fetch(form.action, {
+        await fetch(form.action, {
           method: 'POST',
           body: data,
           headers: { 'Accept': 'application/json' }
         });
-        // Show success regardless — Formspree will capture it
-      } catch(err) {
-        // Still show success — worst case Rishi gets email later
-      }
+      } catch(err) {}
+
+      // Fallback: open mailto draft so owner sees it regardless
+      const subject = encodeURIComponent(`New Axis signup: ${business}`);
+      const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\nBusiness: ${business}\nPhone: ${phone}`);
+      const mailtoFallback = `mailto:info.middletown@novusescaperoom.com?subject=${subject}&body=${body}`;
+
+      // Also push to a simple webhook/log if we set one up
+      try {
+        await fetch('https://hooks.zapier.com/hooks/catch/placeholder/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, business, phone, source: 'axis-landing', timestamp: new Date().toISOString() })
+        });
+      } catch(err) {}
+
       form.style.display = 'none';
       thanks.style.display = 'block';
+
+      // Silent mailto open — opens email client as backup notification
+      setTimeout(() => {
+        const a = document.createElement('a');
+        a.href = mailtoFallback;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }, 1500);
     }
 
     // ── TOPBAR HIDE ON SCROLL UP ──
