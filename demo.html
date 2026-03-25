@@ -438,18 +438,40 @@
       return DEMO_SCRIPT.default;
     }
 
-    function sendMessage(message) {
+        // If running via local demo server, use it; otherwise use scripted responses
+    const LOCAL_SERVER = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    let sessionId = 'demo_' + Math.random().toString(36).slice(2,10);
+
+    async function sendMessage(message) {
       if (!message.trim()) return;
       chatInput.value = '';
       addMessage('user', message);
 
       const typing = showTyping();
-      const delay = 800 + Math.random() * 800;
-      setTimeout(() => {
-        typing.remove();
-        const response = getResponse(message);
-        addMessage('bot', response);
-      }, delay);
+
+      if (LOCAL_SERVER) {
+        // Use local demo server with real Bookeo data
+        try {
+          const r = await fetch('/chat', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({message, session_id: sessionId})
+          });
+          const data = await r.json();
+          typing.remove();
+          addMessage('bot', data.response || getResponse(message));
+        } catch(e) {
+          typing.remove();
+          addMessage('bot', getResponse(message));
+        }
+      } else {
+        // Use scripted responses (GitHub Pages version)
+        const delay = 800 + Math.random() * 800;
+        setTimeout(() => {
+          typing.remove();
+          addMessage('bot', getResponse(message));
+        }, delay);
+      }
     }
 
     chatSend.addEventListener('click', () => sendMessage(chatInput.value));
